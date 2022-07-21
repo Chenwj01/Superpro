@@ -1,0 +1,297 @@
+#linux命令学习#######
+列出当前工作位置的所有内容
+ls
+ll     等于  ls -l
+
+我当前在那个位置
+pwd
+
+如何切换工作的位置 /root/桌面
+cd  /root/桌面
+
+切换到网卡配置文件所在位置/etc/sysconfig/network-scripts/
+
+cd  /etc/sysconfig/network-scripts/
+
+cd命令还有另一种使用
+直接输入cd   可以返回自己的家
+
+知识点：
+/  根  linux系统都是以根为开始的位置
+
+ /boot      与开机启动时的文件相关
+ /etc   系统所有的配置文件都在这   
+ /lib   系统库文件所在位置
+ /media  关于cd/USB等外设挂载在本机的位置
+ /opt    放外置软件存储位置  
+ /root   系统超级管理员的家
+ /sbin   系统超级管理员可以使用的命令
+ /sys   系统核心配置存放位置
+ /usr    通常安装软件时就放这里
+ /bin    普通用户可以使用的命令
+ /dev    系统所有外设配置文件位置
+ /home    普通用户新建都是以/home下自己的名为家
+  /mnt   与/media  类似
+  /proc   与/sys类似，但是多数支持看或改
+  /run   系统自动检测到移动设备时自加载的目录
+ /tmp    系统产生的临时文件存放点
+ /var    系统及程序日志存放点
+
+
+ 
+我想看这个主机的CPU、内存信息
+cat  /proc/cpuinfo
+cat /proc/meminfo
+
+查看/etc/passwd(系统账号相关的文件)关于root的信息
+cat /etc/passwd  | grep  root
+
+知识点：
+| 管道  把前一个命令的执行结果给后一个命令来使用
+
+使用命令查看主机的内存及缓冲区
+free -m  
+只看内存，过滤时不区分大小写
+free -m |grep -i mem 
+
+如何分页来查看/etc/passwd
+cat /etc/passwd | less
+cat /etc/passwd | more
+
+如何查看文件的头5行  默认看10 行
+head -5 /etc/passwd
+
+如何查看文件的尾部5行  默认看10 行
+tail -5 /etc/passwd
+
+查看系统日志发生的最新日志
+tail -f /var/log/messages
+
+
+使用行查看自己主机制IP地址
+ifconfig 
+ip  add`
+
+只想查看ens33网卡的信息
+ip  add  show dev ens33
+ifconfig ens33
+
+查看网关
+netstat -rn
+route -n
+
+使用网络状态监视命令netstat 来监控web服务是否开放
+netstat -anpl  |grep  :80
+ss -anpl |grep :22
+
+也可以使用这个命令来监视服务名(ssh)
+ss -anpl| grep ssh
+ss -anpl| grep apache/nginx/IIS
+
+查看DNS信息
+cat /etc/resolv.conf
+测试域名是否正常
+nslookup  www.163.com
+
+######新建用户##
+useradd  -g root -G wheel -u 9527 -s /bin/bash putongren
+-g  指定用户的主要组
+-G  指定用户的附加组 
+-u  指定ID号
+-s 指定用户交互登录的shell （/bin/bash可交互）
+（/sbin/nologin 不可交互，程序用户就用这个）
+
+查看putongren的信息
+id putongren
+
+删除用户putongren
+userdel  putongren
+-r 递归删除用户信息
+
+
+创建组集
+groupadd  xiaoshou
+groupadd  caiwu
+新来个用户tom是xiaoshou组的用户
+useradd -g xiaoshou tom
+
+我们有一个admin用户一直以来就有了，要把这个用户加入到caiwu组里
+先看caiwu组有这个人吗？
+cat /etc/group|grep  caiwu
+使用如下命令把用户加入组
+gpasswd -a  admin  caiwu
+cat /etc/group|grep  caiwu
+看到已经加入了
+
+把admin用户从组caiwu中删除
+gpasswd -d  admin  caiwu
+cat /etc/group|grep  caiwu
+
+
+useradd -e 2022-03-13  chezhan008
+cat /etc/shadow |grep chezhan008
+  用户    密码 start时间        过期时间
+chezhan008:!!:19061:0:99999:7::19064:
+
+为chezhan008用户改密码
+passwd  chezhan008
+
+echo '1' |passwd --stdin chezhan008
+
+
+
+
+
+
+
+
+
+应用服务控制 
+开启mariadb  
+systemctl start mariadb  
+查看 mariadb状态
+systemctl staus mariadb
+关闭mariadb
+systemctl stop mariadb
+重新加载mariadb 
+systemctl reload mariadb
+重新启动mariadb 
+systemctl restart mariadb
+
+
+
+unzip
+解压zip包
+unzip     **************.zip  
+
+
+打包和解包
+
+
+包的格式
+一般有*****.tar.gz
+一般有*****.tar.bz2
+现在网络上发布的软件包都是这两种
+
+
+操作练习  ：把Mysql 数据库目录下的文件夹打包为bz2的格式
+
+cd
+systemctl stop mariadb
+tar cjvf mariadb- all-date.tar.bz2 /var/lib/mysql/
+
+-c创建
+-j表示压缩方式
+-z表示压缩方式为gz
+-v显示过程
+-f选择使用这些文件
+-C指定解压缩路劲 
+-x 解包
+
+
+
+
+验证测试
+
+rm -rf /var/lib/mysql/test
+systemctl start mariadb
+mysql -uroot -p123456 -e "show databases;"
+tar -xf mariadb -all-date.tar.bz2 -C/
+
+
+########################
+更改权限 
+权限管理    
+权限列表      属主  属组                                     文件名
+-rw-------. 1 root root     1529 3月   9 23:46 anaconda-ks.cfg
+-rw-------.
+
+第一个 - 表示类型      （d 为目录  - 为普通文件 b- 块设备  -l 连接）
+
+第一组 rwx		主人家的权限
+第二组 rwx		是隶属小组的权限
+第三组 rwx		是其他人的权限
+
+r      w    x  
+r代表读取的权限
+w代表写的权限
+x是执行的权限
+
+
+读	写	执行
+4	2 	1
+r 	w	 x
+
+操作 把anaconda-ks.cfg   主任的权限配置为读写执行
+
+chmod	700 anaconda-ks.cfg
+ll anaconda-ks.cfg
+
+操作 把anaconda-ks.cfg   主任的权限配置为读写执行 不动别人的
+chmod 705 anaconda-ks.cfg
+ll anaconda-ks.cfg
+
+操作 把anaconda-ks.cfg   主人 小组 其他的权限配置
+分别配置为 读取与执行，写入与执行 ，读取
+chmod 534 anaconda-ks.cfg
+ll anaconda-ks.cfg
+
+操作练习：
+mkdir -p /myfile/testfile
+echo "999888" >/myfile/testfile/mytext.txt
+要求把myfile文件夹权限 及其子文件夹   子文件权限 都配置为700
+
+chmod -R 700 /myfile
+ll /myfile/testfile
+
+
+在不影响现在权限的情况下配置额外的权限  专为那些不是我们的领导但却是我们的衣食父母
+要看我们的成果 配置额外的权限就是最好的选择
+setfacl 
+
+操作练习 
+ mkdir /csapp
+chmod -R 700 /csapp
+ll /csapp
+很明显领导uli是没有权限的
+想在不影响现有权限给uli读取执行的权限 怎么配置
+
+useradd uli &&echo '123456' | passwd --stdin uli
+ll -d /csapp
+getfacl /csapp
+setfacl -m user:uli:r-x /csapp
+setfacl -m u:uli:r-x /csapp
+
+setfacl -b /csapp
+setfacl -m default:user:util:r-x /csapp
+
+
+
+复制粘贴：
+
+cp指令  
+cp用于复制  它可以将单个文件复制成指定的文件或将其复制的到一个存在的目录
+还可以同时复制多个文件或目录
+
+语法  
+cp 选项 源文件或目录  / 目标文件或目录 
+
+
+
+  选项：
+-a 复制目录时使用  保留其所有信息 包括文件链接  文件属性  并可递归复制目录
+-f 强制复制文件或目录  无论目标目录或文件存在与否
+-i 覆盖文件之前进行确认
+-p 保留源文件或目录属性
+-r/g 递归复制  将指定目录下所有文件与子文件一同复制
+
+
+
+
+
+
+
+
+
+
+
